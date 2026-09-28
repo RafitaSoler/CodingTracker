@@ -3,16 +3,16 @@ using Microsoft.Data.Sqlite;
 
 namespace CodingTracker
 {
-    internal static class CodingSessionRepository
+    public static class CodingSessionRepository
     {
-        internal static List<CodingSession> GetSessions()
+        public static List<CodingSession> GetSessions()
         {
             using SqliteConnection connection = DatabaseManager.CreateConnection();
             var sessions = connection.Query<CodingSession>("SELECT * FROM CodingSessions");
             return sessions.ToList();
         }
 
-        internal static int InsertSessions(List<CodingSession> sessions)
+        public static int InsertSessions(List<CodingSession> sessions)
         {
             using SqliteConnection connection = DatabaseManager.CreateConnection();
             connection.Open();
@@ -25,7 +25,7 @@ namespace CodingTracker
             return rowsInserted;
         }
 
-        internal static int DeleteSession(int id)
+        public static int DeleteSession(int id)
         {
             using SqliteConnection connection = DatabaseManager.CreateConnection();
             string query = "DELETE FROM CodingSessions WHERE Id = @Id";

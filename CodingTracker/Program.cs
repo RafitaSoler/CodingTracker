@@ -12,6 +12,7 @@ class Program
 
         DatabaseManager.SetConfiguration(config);
         DatabaseManager.Start();
+        DatabaseManager.Initialize();
 
         UIController ui = new(config);
         ui.MainMenu();

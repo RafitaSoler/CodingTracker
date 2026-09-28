@@ -4,12 +4,12 @@ using Microsoft.Extensions.Configuration;
 
 namespace CodingTracker
 {
-    internal static class DatabaseManager
+    public static class DatabaseManager
     {
         private static IConfiguration _config = null!;
         private static string _connectionString = "";
 
-        internal static void SetConfiguration(IConfiguration config)
+        public static void SetConfiguration(IConfiguration config)
         {
             _config = config;
             _connectionString = _config.GetConnectionString("DefaultConnection");
@@ -20,7 +20,7 @@ namespace CodingTracker
             return new(_connectionString);
         }
 
-        internal static void Start()
+        public static void Start()
         {
             using SqliteConnection connection = CreateConnection();
             string query =
@@ -34,13 +34,12 @@ namespace CodingTracker
                     )
                 """;
             connection.Execute(query);
-            Initialize();
         }
 
         /// <summary>
         /// Inserts some default values for the user to view
         /// </summary>
-        private static void Initialize()
+        internal static void Initialize()
         {
             if (IsEmpty())
             {
@@ -63,6 +62,13 @@ namespace CodingTracker
             using SqliteConnection connection = CreateConnection();
             int count = connection.ExecuteScalar<int>("SELECT EXISTS (SELECT 1 FROM CodingSessions)");
             return count == 0;
+        }
+
+        public static void EmptyDb()
+        {
+            using SqliteConnection connection = CreateConnection();
+            string query = "DELETE FROM CodingSessions";
+            connection.Execute(query);
         }
     }
 }
