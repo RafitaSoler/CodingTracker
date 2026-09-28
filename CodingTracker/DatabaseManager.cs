@@ -15,7 +15,7 @@ namespace CodingTracker
             _connectionString = _config.GetConnectionString("DefaultConnection");
         }
 
-        private static SqliteConnection CreateConnection()
+        internal static SqliteConnection CreateConnection()
         {
             return new(_connectionString);
         }
@@ -34,32 +34,35 @@ namespace CodingTracker
                     )
                 """;
             connection.Execute(query);
+            Initialize();
         }
 
-        internal static bool IsEmpty()
+        /// <summary>
+        /// Inserts some default values for the user to view
+        /// </summary>
+        private static void Initialize()
+        {
+            if (IsEmpty())
+            {
+                List<CodingSession> sessions = new()
+                {
+                    new(".NET Course", "C#", new DateTime(2026, 9, 22, 18, 30, 0), null),
+                    new() { Project = "Coding Tracker", Language = "C#",
+                        StartTime = new DateTime(2026, 9, 21, 18, 30, 0),
+                        EndTime   = new DateTime(2026, 9, 21, 20, 15, 0) },
+                    new() { Project = "Platformer", Language = "C++",
+                        StartTime = new DateTime(2026, 9, 22, 10, 0, 0),
+                        EndTime   = new DateTime(2026, 9, 22, 12, 45, 0) }
+                };
+                CodingSessionRepository.InsertSessions(sessions);
+            }
+        }
+
+        private static bool IsEmpty()
         {
             using SqliteConnection connection = CreateConnection();
-            int count = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM CodingSessions");
+            int count = connection.ExecuteScalar<int>("SELECT EXISTS (SELECT 1 FROM CodingSessions)");
             return count == 0;
-        }
-
-        internal static List<CodingSession> GetSessions()
-        {
-            using SqliteConnection connection = CreateConnection();
-            var sessions = connection.Query<CodingSession>("SELECT * FROM CodingSessions");
-            return sessions.ToList();
-        }
-
-        internal static void InsertSessions(List<CodingSession> sessions)
-        {
-            using SqliteConnection connection = CreateConnection();
-            connection.Open();
-            using SqliteTransaction transaction = connection.BeginTransaction();
-
-            string query = "INSERT INTO CodingSessions (Project, Language, StartTime, EndTime) VALUES (@Project, @Language, @StartTime, @EndTime)";
-            connection.Execute(query, sessions, transaction);
-
-            transaction.Commit();
         }
     }
 }
